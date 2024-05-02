@@ -31,6 +31,7 @@
         background-color: #007bff;
         opacity: 1; /* Torna a célula visível ao passar o mouse */
     }
+
   </style>
 {% endblock %}
 {%block content%}
@@ -46,7 +47,7 @@
       </thead>
       <tbody>
           {%for room in rooms%}
-        <tr onclick="window.location='/chat/{{room.id}}';" onmouseover="this.style.transform = 'translateY(5px)';" onmouseout="this.style.transform = 'translateY(0)';">
+        <tr onclick="window.location='/chat/{{room.id}}';">
           <th  scope="row">{{room.id}}</th>
           <td>{{room.nome}}</td>
         </tr>

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block css_blcok %}
+
+{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="card">
+     <div class= "card-header text-center"><p class="h1">Criar sala</p></div>
+      <div class="card-body">
+        <form id="createRoomForm" method="POST">{% csrf_token %}
+          <div class="input-group input-group-lg">
+            <span class="input-group-text" id="inputGroup-sizing-lg">Nome da sala:</span>
+            <input type="text" class="form-control"  name="nome"aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
+            <button class="btn btn-outline-secondary" type="submit" id="button-addon2">
+              <i class="fa-solid fa-angles-up"></i>Criar
+            </button>
+          </div>
+        </form>
+      </div>
+  </div>
+  
+</div>
+
+{% endblock %}
+
+
+{% block js_blcok %}
+<script type="text/javascript">
+  console.log(window.location.host)
+  const Qs = (el) => document.querySelector(el);
+  const cria_sala = async (data) =>{
+      const response = await fetch(`/create_room/`,{
+          method:"POST",
+          headers:{
+              "Content-type":"aplication/json",
+              "X-CSRFToken":data.csrfmiddlewaretoken
+          },
+          body: JSON.stringify(data)
+      });
+     const json_response = await response.json() ;
+    
+      window.location.href = `/chat/${json_response.room}`;
+  };
+  Qs("#createRoomForm").addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      cria_sala(data);
+      console.log(data)
+  });
+  
+</script>
+
+{% endblock %}

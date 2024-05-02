@@ -1,0 +1,68 @@
+{%extends 'base.html'%}
+{% block css_blcok %}
+  <style>
+    /* Remove a decoração padrão dos links */
+    table.table a {
+        text-decoration: none;
+    }
+
+    /* Adiciona um efeito de hover para destacar as linhas da tabela */
+    table.table tbody tr {
+        cursor: pointer;
+        transition: transform 0.3s ease; /* Adiciona uma transição suave para o deslocamento */
+        position: relative;
+    }
+
+    /* Estilo para a célula de "Entrar" */
+    .enter-cell {
+        position: absolute;
+        bottom: -30px; /* Ajusta a posição para aparecer abaixo da linha */
+        left: 0;
+        width: 100%; /* Faz com que o texto "Entrar" ocupe toda a largura da linha */
+        text-align: center; /* Centraliza o texto horizontalmente */
+        opacity: 0;
+        transition: opacity 0.3s ease; /* Adiciona uma transição suave para a opacidade */
+        padding: 5px 0; /* Ajusta o preenchimento para alinhar verticalmente o texto */
+        border-radius: 5px;
+    }
+
+    /* Estilo para a célula de "Entrar" quando passa o mouse */
+    table.table tbody tr:hover .enter-cell {
+        background-color: #007bff;
+        opacity: 1; /* Torna a célula visível ao passar o mouse */
+    }
+  </style>
+{% endblock %}
+{%block content%}
+  <div class="container">
+    <div class="card">
+    <table class="table table-striped">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">salas</th>
+
+        </tr>
+      </thead>
+      <tbody>
+          {%for room in rooms%}
+        <tr onclick="window.location='/chat/{{room.id}}';" onmouseover="this.style.transform = 'translateY(5px)';" onmouseout="this.style.transform = 'translateY(0)';">
+          <th  scope="row">{{room.id}}</th>
+          <td>{{room.nome}}</td>
+        </tr>
+          {%endfor%}
+    
+      </tbody>
+    </table>
+  </div>
+{%endblock%}
+{% block js_blcok %}
+  <!-- Inicializa todos os popovers na página -->
+  <!-- <script>
+      var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+      var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+          return new bootstrap.Popover(popoverTriggerEl)
+      })
+  </script>
+ -->
+{%endblock%}

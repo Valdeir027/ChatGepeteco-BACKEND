@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block css_blcok %}
+
+<style>
+  .messages {
+      height: 300px;
+      overflow-y: hidden; 
+      padding: 10px;
+      margin-bottom: 20px;
+      transition: overflow-y 0.10s ease;
+  }
+
+  .messages::-webkit-scrollbar {
+      width: 5px; 
+      opacity: 0; 
+      transition: opacity 0.3s ease; 
+  }
+
+  .messages.scrollable::-webkit-scrollbar {
+      opacity: 1; 
+  }
+
+  .messages::-webkit-scrollbar-track {
+      background: transparent; 
+  }
+
+  .messages::-webkit-scrollbar-thumb {
+      background: #888; 
+      border-radius: 5px; 
+  }
+
+
+  .messages {
+      scrollbar-width: thin; 
+      scrollbar-color: #888 transparent;rolagem */
+  }
+
+    .message {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        max-width: 100%;
+    }
+
+    .message.received {
+        background-color: #ddd;
+        color: #000;
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+
+<div class="container">
+  
+  <div class="card">
+    <div class= "card-header text-center"><p class="h1">{{room.nome}}</p></div>
+      <div id="messages" class="messages card-body">
+        {%for message in messages%}
+        <div class="message received">
+           <p>
+              {{message.mensagem}}
+           </p>
+        </div>
+        {%endfor%}
+      </div>
+      <div class="card-footer">
+        <form id="form" class="form">
+          <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Recipient's username" name="message" aria-label="Recipient's username" aria-describedby="button-addon2">
+            <button class="btn btn-outline-secondary" type="submit" id="button-addon2">
+              <i class="fa-solid fa-angles-up"></i>enviar
+            </button>
+          </div>
+        </form>
+        
+      </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block js_blcok %}
+<script type="text/javascript">
+    const messages = document.getElementById('messages');
+    function scrollToBottom() {
+        var messages = document.getElementById('messages');
+        messages.scrollTop = messages.scrollHeight;
+    }
+    
+    
+    window.onload = function() {
+        scrollToBottom();
+
+    };
+    let url = `wss://${window.location.host}/ws/socket-server/{{room.id}}/`
+
+    const chatSocket = new WebSocket(url)
+
+    chatSocket.onopen = function (event) {
+        console.log('conexão bem sucedida');
+    };
+    chatSocket.onmessage = function (e) {
+        let data = JSON.parse(e.data)
+        console.log('Data:', data)
+
+        if (data.type === 'chat') {
+            let messages = document.getElementById('messages')
+
+            let messageClass = data.message_data.is_self ? 'message' : 'message received';
+            messages.insertAdjacentHTML('beforeend', `<div class="${messageClass}">
+                                   <p>${data.message_data.message}</p>
+                               </div>`)
+        }
+      scrollToBottom()
+    }
+
+    let form = document.getElementById('form')
+    form.addEventListener('submit', (e) => {
+        e.preventDefault()
+        let message = e.target.message.value
+        chatSocket.send(JSON.stringify({
+            'message': message
+        }))
+        form.reset()
+    })
+
+    chatSocket.onerror = function (error) {
+        console.error('WebSocket error:', error);
+    };
+
+
+  messages.addEventListener('mouseenter', function() {
+
+      messages.style.overflowY = 'auto'; 
+  });
+
+  messages.addEventListener('mouseleave', function() {
+      
+      messages.style.overflowY = 'hidden'; 
+  });
+</script>
+{% endblock %}

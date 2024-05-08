@@ -14,6 +14,3 @@ class Message(models.Model):
     room = models.ForeignKey('Room', on_delete=models.CASCADE)
     mensagem = models.TextField()
 
-    def __str__(self):
-      return f"user:{self.user.username} room:{self.room.nome} mensagem:{self.mensagem}"
-

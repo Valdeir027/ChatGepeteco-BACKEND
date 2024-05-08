@@ -3,7 +3,8 @@
 
 <style>
   .messages {
-      height: 300px;
+      height: 80%;
+      
       overflow-y: hidden; 
       padding: 10px;
       margin-bottom: 20px;
@@ -48,6 +49,34 @@
         background-color: #ddd;
         color: #000;
     }
+  .chat-message {
+    margin-bottom: 15px;
+    overflow: auto;
+  }
+  .message-text {
+    padding: 10px 15px;
+    border-radius: 10px;
+  }
+  .message-sent .message-text {
+    background-color: #007bff;
+    color: #ffffff;
+    float: right;
+  }
+  .message-received .message-text {
+    background-color:#ddd ;
+    color: #212529;
+    float: left;
+  }
+  .message-username {
+    font-weight: bold;
+    color: #6c757d;
+    margin-bottom: 5px;
+  }
+  .clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+  }
 </style>
 
 {% endblock %}
@@ -59,10 +88,13 @@
     <div class= "card-header text-center"><p class="h1">{{room.nome}}</p></div>
       <div id="messages" class="messages card-body">
         {%for message in messages%}
-        <div class="message received">
-           <p>
-              {{message.mensagem}}
-           </p>
+        <div class="chat-message {% if request.user == message.user %}message-sent{%else%}message-received{%endif%} clearfix">
+          <div class="message-text">
+            {% if request.user != message.user %}
+            <div class="message-username">{{message.user.username}}</div>
+            {%endif%}
+            {{message.mensagem}}
+          </div>
         </div>
         {%endfor%}
       </div>
@@ -106,14 +138,27 @@
     chatSocket.onmessage = function (e) {
         let data = JSON.parse(e.data)
         console.log('Data:', data)
-
+        if (data.message_data.user === {{request.user.id}}){
+        message =`<div class="chat-message message-sent clearfix">
+          <div class="message-text">
+            ${data.message_data.message}
+          </div>
+        </div>`
+        }else{
+        message =`<div class="chat-message message-received clearfix">
+          <div class="message-text">
+            <div class="message-username">${data.message_data.username}</div>
+            ${data.message_data.message}
+          </div>
+        </div>`
+      
+        }
+      
         if (data.type === 'chat') {
             let messages = document.getElementById('messages')
 
             let messageClass = data.message_data.is_self ? 'message' : 'message received';
-            messages.insertAdjacentHTML('beforeend', `<div class="${messageClass}">
-                                   <p>${data.message_data.message}</p>
-                               </div>`)
+            messages.insertAdjacentHTML('beforeend', message )
         }
       scrollToBottom()
     }
@@ -123,7 +168,8 @@
         e.preventDefault()
         let message = e.target.message.value
         chatSocket.send(JSON.stringify({
-            'message': message
+            'user_id':"{{request.user.id}}",
+             'message': message
         }))
         form.reset()
     })
@@ -142,5 +188,10 @@
       
       messages.style.overflowY = 'hidden'; 
   });
+  var larguraTela = window.innerWidth;
+  var alturaTela = window.innerHeight;
+
+  var objeto = document.getElementById("messages");
+  objeto.style.height = (alturaTela * 0.6) + "px"
 </script>
 {% endblock %}

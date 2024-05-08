@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Online</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .chat-container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      background-color: #ffffff;
+      overflow: auto;
+    }
+    .chat-header {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .chat-message {
+      margin-bottom: 15px;
+      overflow: auto;
+    }
+    .message-text {
+      padding: 10px 15px;
+      border-radius: 10px;
+    }
+    .message-sent .message-text {
+      background-color: #007bff;
+      color: #ffffff;
+      float: right;
+    }
+    .message-received .message-text {
+      background-color: #f8f9fa;
+      color: #212529;
+      float: left;
+    }
+    .message-username {
+      font-weight: bold;
+      color: #6c757d;
+      margin-bottom: 5px;
+    }
+    .clearfix::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <div class="chat-container clearfix">
+      <div class="chat-message message-received clearfix">
+        <div class="message-text">
+          <div class="message-username">João</div>
+          Olá! Como posso ajudá-lo hoje?
+        </div>
+      </div>
+      <div class="chat-message message-sent clearfix">
+        <div class="message-text">
+          Olá! Estou com um problema com meu pedido.
+        </div>
+      </div>
+      <!-- Mais mensagens podem ser adicionadas aqui -->
+    </div>
+  </div>
+</body>
+</html>

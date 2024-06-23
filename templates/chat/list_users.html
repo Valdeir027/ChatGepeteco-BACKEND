@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block css_blcok %}
+  <style>
+    .user-list {
+        list-style-type: none;
+        padding: 0;
+    }
+    .user-list li {
+        padding: 10px;
+        margin-bottom: 5px;
+        border-radius: 5px;
+    }
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        display: inline-block;
+        border-radius: 50%;
+        margin-right: 5px;
+    }
+    .online {
+        background-color: #28a745;
+    }
+    .offline {
+        background-color: #dc3545;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <ul class="list-group user-list">
+      {%for user in users%}
+        {%if user != request.user%}
+          
+        <li class="list-group-item"> <span class="status-dot {%if user.is_authenticated %}online{%else%}offline{%endif%}"></span> {{user.username}} </li>
+      {%endif%}
+      {%endfor%}
+    </ul>
+</div>
+{% endblock %}

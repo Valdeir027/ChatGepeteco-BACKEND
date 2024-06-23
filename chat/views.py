@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.sessions.models import Session
+from django.utils import timezone
 
 # Create your views here.
 
@@ -82,6 +84,17 @@ def user_login(request):
           }, status=400)
   else:
     return render(request, "chat/login.html")
+
+@login_required
+def list_users(requests):
+  sessions = Session.objects.filter(expire_date__gte=timezone.now())
+  usuarios_logados = []
+  for session in sessions:
+      data_da_sessao = session.get_decoded()
+      user_id = data_da_sessao.get('_auth_user_id')
+      user = User.objects.get(pk=user_id)
+      usuarios_logados.append(user)
+  return render(requests, "chat/list_users.html", context={"users": usuarios_logados})
 
 @login_required
 def sair(request):

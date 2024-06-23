@@ -30,9 +30,17 @@ CSRF_TRUSTED_ORIGINS = ["https://*.replit.dev", "https://*.replit.app"]
 # Application definition
 
 INSTALLED_APPS = [
-    'channels', 'django.contrib.admin', 'django.contrib.auth',
-    'django.contrib.contenttypes', 'django.contrib.sessions',
-    'django.contrib.messages', 'django.contrib.staticfiles', 'chat'
+    'channels',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'chat',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'api',
 ]
 
 ASGI_APPLICATION = 'django_project.asgi.application'
@@ -105,6 +113,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':
+    ('rest_framework_simplejwt.authentication.JWTAuthentication', ),
+}
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 

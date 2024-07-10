@@ -29,7 +29,7 @@ class ChatConsumer(WebsocketConsumer):
     if user_token =='':
       user = self.scope['user']
     else: 
-      user = get_user_from_access_token(user_token)
+        user = get_user_from_access_token(user_token)
     message_data = {
         'message': message,
         'user': user.id,

@@ -5,8 +5,9 @@ from django.contrib.auth.models import User
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
-
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework import serializers
 
 class RoomViewSet(viewsets.ModelViewSet):
   queryset = Room.objects.all()
@@ -33,12 +34,22 @@ class RegisterView(generics.CreateAPIView):
     })
 
 
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        refresh = self.get_token(self.user)
 
-# class MessageList(generics.ListAPIView):
-#     serializer_class = MessageSerializer
+        # Add custom response data here
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'email': self.user.email
+        }
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        
+        
+        return data
 
-#     def get_queryset(self):
-#         room_id = self.request.query_params.get('room_id', None)
-#         if room_id is not None:
-#             return Message.objects.filter(room_id=room_id)
-#         return Message.objects.all()
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer

@@ -4,13 +4,14 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .views import RoomViewSet, RegisterView
+from .views import RoomViewSet, RegisterView, MessageList
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
 router = DefaultRouter()
 router.register(r'rooms', RoomViewSet)
+router.register(r'messages',MessageList )
 
 schema_view = get_schema_view(
     openapi.Info(

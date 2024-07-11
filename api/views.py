@@ -1,6 +1,6 @@
 from rest_framework import viewsets
-from chat.models import Room
-from .serializers import RoomSerializer, UserSerializer
+from chat.models import Room, Message
+from .serializers import RoomSerializer, UserSerializer,MessageSerializer
 from django.contrib.auth.models import User
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -11,6 +11,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 class RoomViewSet(viewsets.ModelViewSet):
   queryset = Room.objects.all()
   serializer_class = RoomSerializer
+
+class MessageList(viewsets.ModelViewSet):
+  queryset = Message.objects.all()
+  serializer_class = MessageSerializer
 
 
 class RegisterView(generics.CreateAPIView):
@@ -27,3 +31,14 @@ class RegisterView(generics.CreateAPIView):
         'refresh': str(refresh),
         'access': str(refresh.access_token),
     })
+
+
+
+# class MessageList(generics.ListAPIView):
+#     serializer_class = MessageSerializer
+
+#     def get_queryset(self):
+#         room_id = self.request.query_params.get('room_id', None)
+#         if room_id is not None:
+#             return Message.objects.filter(room_id=room_id)
+#         return Message.objects.all()

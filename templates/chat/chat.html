@@ -128,7 +128,7 @@
         scrollToBottom();
 
     };
-    let url = `wss://${window.location.host}/ws/socket-server/{{room.id}}/`
+    let url = `ws://${window.location.host}/ws/socket-server/{{room.id}}/`
 
     const chatSocket = new WebSocket(url)
 

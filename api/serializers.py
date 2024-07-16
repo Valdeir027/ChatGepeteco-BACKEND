@@ -11,10 +11,14 @@ class RoomSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    user_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
-        fields = '__all__'
+        fields = ['id', 'user', 'user_name', 'room', 'mensagem']
+
+    def get_user_name(self, obj):
+        return obj.user.username if obj.user else None
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.decorators import action
 from rest_framework import serializers
 
 class RoomViewSet(viewsets.ModelViewSet):
@@ -14,8 +15,18 @@ class RoomViewSet(viewsets.ModelViewSet):
   serializer_class = RoomSerializer
 
 class MessageList(viewsets.ModelViewSet):
-  queryset = Message.objects.all()
-  serializer_class = MessageSerializer
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+
+    @action(detail=False, methods=['get'])
+    def by_room(self, request, *args, **kwargs):
+        room_id = request.query_params.get('room_id', None)
+        if room_id is not None:
+            messages = self.queryset.filter(room__id=room_id)
+            serializer = self.get_serializer(messages, many=True)
+            return Response(serializer.data)
+        else:
+            return Response({"error": "room_id is required"}, status=400)
 
 
 class RegisterView(generics.CreateAPIView):

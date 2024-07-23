@@ -11,4 +11,4 @@ RUN pip install -r requirements.txt
 # Copia o resto do código para o diretório de trabalho
 COPY . .
 # Configuração para o servidor Daphne
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "django_project.asgi:application"]
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]

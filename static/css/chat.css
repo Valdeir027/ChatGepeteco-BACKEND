@@ -1,0 +1,86 @@
+html, body {
+    height: 100%;
+}
+.messages {
+    height: 80%;
+    
+    overflow-y: auto; 
+    padding: 10px;
+    margin-bottom: 20px;
+    transition: overflow-y 0.10s ease;
+}
+#chat{
+  overflow: hidden;
+  resize: none;
+  position: absolute;
+  bottom: 0;
+}
+.send-message{
+  position: relative;
+}
+.messages::-webkit-scrollbar {
+    width: 5px; 
+    opacity: 0; 
+    transition: opacity 0.3s ease; 
+}
+
+.messages.scrollable::-webkit-scrollbar {
+    opacity: 1; 
+}
+
+.messages::-webkit-scrollbar-track {
+    background: transparent; 
+}
+
+.messages::-webkit-scrollbar-thumb {
+    background: #888; 
+    border-radius: 5px; 
+}
+
+
+.messages {
+    scrollbar-width: thin; 
+    scrollbar-color: #888 transparent;
+}
+
+.message {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    max-width: 100%;
+}
+
+.message.received {
+    background-color: #ddd;
+    color: #000;
+}
+.chat-message {
+  margin-bottom: 15px;
+  overflow: auto;
+}
+.message-text {
+  padding: 10px 15px;
+  border-radius: 10px;
+}
+.message-sent .message-text {
+  background-color: #007bff;
+  color: #ffffff;
+  float: right;
+}
+.message-received .message-text {
+  background-color:#ddd ;
+  color: #212529;
+  float: left;
+}
+.message-username {
+  font-weight: bold;
+  color: #6c757d;
+  margin-bottom: 5px;
+}
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}

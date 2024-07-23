@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/chat.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between">
+    
+    <div class="d-flex justify-content-center align-items-center">
+        <img src="{% static 'icon.svg' %}"class="m-2" width="40" alt="">
+        <h3>
+            <span class="text-primary">Chat</span>Gepeteco
+        </h3>
+        </div>
+    <button type="button" class="btn btn-transparent mb-2" data-bs-toggle="modal"  data-bs-target="#staticBackdrop"><i class="bi bi-plus-circle-fill text-primary"></i></button>
+</div>
+<div class="d-flex h-100">
+        {%include 'chat/toats.html'%}
+        <div class="chat-rooms h-100 w-25">
+            <div class="rooms m-3">
+                <ul class="list-rooms list-group shadow border-0">
+                    {% include 'chat/chat-list-rooms.html'%}
+                </ul>
+            </div>
+        </div>
+
+            <div class="chat-messages h-100 w-75" style="display: none">
+                
+                
+                <div div class="messages card m-3 p-3 h-75 shadow border-0 overflow-scroll">
+                    {% include 'chat/chat-list-message.html'%}
+                </div>
+                
+                
+                <div class="card m-3 shadow border-0">
+                    {% include 'chat/send-message.html'%}
+                </div>
+            </div>
+    </div>
+
+    {%include 'chat/modal-create-room.html'%}
+{% endblock %}
+
+{% block js %}
+    <script defer src="{% static 'js/chat.js' %}"></script>
+{% endblock %}

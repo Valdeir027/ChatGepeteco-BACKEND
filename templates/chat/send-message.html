@@ -1,0 +1,26 @@
+<form class="send-message">
+    {% csrf_token %}
+    <input type="hidden" name="room_id" id="selected-room">
+    <label for="chat" class="visually-hidden">Your message</label>
+    <div class="d-flex align-items-center p-3 rounded bg-light">
+        <!-- <button type="button" class="btn btn-light p-2 me-2">
+            <svg class="bi bi-image" width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 18">
+                <path d="M13 5.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0ZM7.565 7.423 4.5 14h11.518l-2.516-3.71L11 13 7.565 7.423Z"/>
+                <path d="M18 1H2a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z"/>
+                <path d="M13 5.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0ZM7.565 7.423 4.5 14h11.518l-2.516-3.71L11 13 7.565 7.423Z"/>
+            </svg>
+            <span class="visually-hidden">Upload image</span>
+        </button>
+        <button type="button" class="btn btn-light p-2 me-2">
+            <svg class="bi bi-emoji-smile" width="20" height="20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                <path d="M13.408 7.5h.01m-6.876 0h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM4.6 11a5.5 5.5 0 0 0 10.81 0H4.6Z"/>
+            </svg>
+            <span class="visually-hidden">Add emoji</span>
+        </button> -->
+        <textarea id="chat" rows="1"  name="message" class="form-control me-2" placeholder="Your message..."></textarea>
+        <button type="submit" class="btn btn-primary ">
+            <i class="bi bi-arrow-up"></i>
+            <span class="visually-hidden">Send message</span>
+        </button>
+    </div>
+</form>

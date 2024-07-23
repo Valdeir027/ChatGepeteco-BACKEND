@@ -1,0 +1,8 @@
+<div class="chat-message {% if request.user == message.user %}message-sent{%else%}message-received{%endif%} clearfix">
+    <div class="message-text">
+      {% if request.user != message.user %}
+      <div class="message-username">{{message.user.username}}</div>
+      {%endif%}
+      {{message.text}}
+    </div>
+  </div>

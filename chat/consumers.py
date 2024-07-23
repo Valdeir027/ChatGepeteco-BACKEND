@@ -3,56 +3,179 @@ from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
 from datetime import datetime
-from .models import Message
+from .models import Message, Room
 from rest_framework.authtoken.models import Token
 from .middleware import get_user_from_access_token
+
+
 class ChatConsumer(WebsocketConsumer):
 
   def connect(self):
-    self.room_uri = self.scope['url_route']['kwargs']['id']
-    self.room_group_name = 'chat_%s' % self.room_uri
+      self.accept()
 
-    async_to_sync(self.channel_layer.group_add)(self.room_group_name,
-                                                self.channel_name)
+      # Adiciona o WebSocket ao grupo de notificações
+      async_to_sync(self.channel_layer.group_add)(
+          'main',
+          self.channel_name
+      )
+      self.groups.append('main')
 
-    self.accept()
+  def disconnect(self, close_code):
+        # Remove o WebSocket do grupo de notificações
+        async_to_sync(self.channel_layer.group_discard)(
+            'main',
+            self.channel_name
+        )
 
   def receive(self, text_data):
     text_data_json = json.loads(text_data)
-    print(text_data_json)
-    try:
-      user_token = text_data_json["user_token"]
-    except:
-      user_token = ""
-    message = text_data_json['message']
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    if user_token =='':
-      user = self.scope['user']
+    command = text_data_json.get('command', '')
+    user_token = text_data_json.get("user_token")
+    print(user_token) 
+    if user_token is not None:
+      user = get_user_from_access_token(user_token)
     else: 
-        user = get_user_from_access_token(user_token)
-    message_data = {
-        'message': message,
-        'user': user.id,
-        'username': user.username,
-        'timestamp': timestamp
-    }
-    obj_message = Message.objects.create(user=user,
-                                         room_id=self.room_uri,
-                                         mensagem=message)
-    async_to_sync(self.channel_layer.group_send)(self.room_group_name, {
-        'type': 'chat_message',
-        'message_data': message_data
-    })
+        user = self.scope["user"]
+
+    if command == 'join':
+      room_name = text_data_json.get('room_name')
+      if room_name:
+          group_name = f'chat_{room_name}'
+          # Adiciona o WebSocket ao grupo
+          try:
+              async_to_sync(self.channel_layer.group_add)(group_name,
+                                                  self.channel_name)
+              print("Conectou no grupo: ", group_name)
+
+              self.groups.append(group_name)
+              
+
+              print(self.groups)
+          except:
+              print("não conectou")
+
+    elif command == 'leave':
+      room_name = text_data_json.get('room_name')
+      if room_name:
+          group_name = f'chat_{room_name}'
+          # Remove o WebSocket do grupo
+          async_to_sync(self.channel_layer.group_discard)(
+              group_name,
+              self.channel_name
+          )
+          print("removendo grupo:", group_name)
+          for group in self.groups:
+              if group == group_name:
+                  self.groups.remove(group_name)
+          print(self.groups)
+
+    elif command == 'createRoom':
+      print("Comand createRoom")
+      room_name = text_data_json.get('room_name')
+      print(room_name)
+      if room_name:
+          print("entrou em room_name")
+          room = Room.objects.create(user = self.scope["user"], title = room_name)
+
+          group_name = f'chat_{room.id}'
+
+
+          try:
+              async_to_sync(self.channel_layer.group_send)(
+                  "main",
+                  {
+                      'type': 'create_room',
+                      'room': {
+                          'id': room.id,
+                          'title': room.title,
+                          'created_at': room.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                          'user': room.user.username
+                      }
+                  }
+              )
+              print("enviou pro grupo")
+          except:
+              print("não enviou nada pro servidor")
+
+    elif command == 'message':
+      room_name = text_data_json.get('room_name')
+      message = text_data_json.get('message', '')
+      if room_name:
+          group_name = f'chat_{room_name}'
+          room = Room.objects.get(id = room_name)   
+
+          new_message = Message.objects.create(user = user, text = message)
+          room.messages.add(new_message)
+          # Envia a mensagem para o grupo
+          async_to_sync(self.channel_layer.group_send)(
+              group_name,
+              {
+                  'type': 'chat_message',
+                  'message': {
+                      'id': new_message.id,
+                      'text': new_message.text,
+                      'created_at': new_message.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                      'user': {
+                          'id': new_message.user.id,
+                          'username': new_message.user.username
+                      }
+                      
+                      }
+                  
+                  
+              }
+          )
+          async_to_sync(self.channel_layer.group_send)(
+              'main',
+              {
+                  'type': 'notify_users',
+                  'notification': {
+                      'room':{
+                          'id': room.id,
+                          'title': room.title,
+                          'created_at': room.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                          'user': {
+                              'id':room.user.id,
+                              'username':room.user.username,
+                          }
+
+                      },
+                      'message':{
+                        'id': new_message.id,
+                        'text': new_message.text,
+                        'created_at': new_message.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                        'user': {
+                            'id': new_message.user.id,
+                            'username': new_message.user.username
+                        }
+                  }
+                  }
+              }
+          )
+
 
   def chat_message(self, event):
-    message_data = event['message_data']
-    try:
-      user_token = event["user_token"]
-    except:
-      user_token = ""
+    message = event.get('message', '')
+    user = event.get('user', '')
     self.send(text_data=json.dumps({
-        'type': 'chat',
-        'message_data': message_data,
-        'user_token':user_token
+        'message': message,
+        'username': user
     }))
+
+  def notify_users(self, event):
+        # Envia notificações para todos os usuários
+        message = event.get('notification', '')
+
+        self.send(text_data=json.dumps({
+            'notification': message
+        }))
+
+  def create_room(self, event):
+        print(event)
+        # Envia notificações para todos os usuários
+        room = event.get('room', '')
+
+        self.send(text_data=json.dumps({
+            'room': room
+        }))
 

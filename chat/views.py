@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.generic.detail import DetailView
 from .models import Message, Room
 import json as simplejson
 from django.http import JsonResponse, HttpResponseRedirect
@@ -8,25 +9,14 @@ from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.sessions.models import Session
 from django.utils import timezone
-
+import json
 # Create your views here.
 
 @login_required
 def index(request):
   rooms = Room.objects.all()
-  return render(request, "chat/index.html", context={"rooms": rooms})
+  return render(request, "chat/home.html", context={"rooms": rooms})
 
-@login_required
-def chat(request, id):
-  room = Room.objects.get(id=id)
-  messages = Message.objects.filter(room=room)
-
-  return render(request,
-                "chat/chat.html",
-                context={
-                    "room": room,
-                    "messages": messages
-                })
 
 @login_required
 def create_room(request):
@@ -85,16 +75,39 @@ def user_login(request):
   else:
     return render(request, "chat/login.html")
 
-@login_required
-def list_users(requests):
-  sessions = Session.objects.filter(expire_date__gte=timezone.now())
-  usuarios_logados = []
-  for session in sessions:
-      data_da_sessao = session.get_decoded()
-      user_id = data_da_sessao.get('_auth_user_id')
-      user = User.objects.get(pk=user_id)
-      usuarios_logados.append(user)
-  return render(requests, "chat/list_users.html", context={"users": usuarios_logados})
+
+class RoomDetailView(DetailView):
+    model = Room
+    template_name = 'chat/chat-list-message.html'
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        return context
+    
+
+def send_message(request, pk):
+    data = json.loads(request.body)
+    room = Room.objects.get(id = pk)
+    new_message = Message.objects.create(user = request.user, text = data['message'])
+
+    room.messages.add(new_message)
+    print(pk, data)
+
+    return render(request, 'chat/message.html',{
+        'message': new_message,
+    })
+
+def create_room(request,):
+    data = json.loads(request.body)
+    room = Room.objects.create(user = request.user, title = data['title'])
+
+    return render(request, 'chat/room.html',{
+        'room': room, 
+    })
+
+
 
 @login_required
 def sair(request):

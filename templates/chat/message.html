@@ -1,8 +1,8 @@
-<li class="list-group-item border-bottom-0">
-    <div class="d-flex justify-content-between">
-        <div class="content text-center ">
-            <b>@{{message.user.username}}</b> {{message.text}}
-        </div>
-        <div class="time ">{{message.created_at}}</div>
+<div class="chat-message {% if request.user == message.user %}message-sent{%else%}message-received{%endif%} clearfix">
+    <div class="message-text">
+      {% if request.user != message.user %}
+      <div class="message-username">{{message.user.username}}</div>
+      {%endif%}
+      {{message.text}}
     </div>
-</li>     
+  </div>

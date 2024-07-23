@@ -19,6 +19,17 @@ class ChatConsumer(WebsocketConsumer):
           self.channel_name
       )
       self.groups.append('main')
+    
+    #   async_to_sync(self.channel_layer.group_send)(
+    #               "main",
+    #               {
+    #                   'type': 'login_user',
+    #                   'user': {
+    #                       'id': user.id,
+    #                       'username': user.username,
+    #                   }
+    #               }
+    #           )
 
   def disconnect(self, close_code):
         # Remove o WebSocket do grupo de notificações
@@ -67,14 +78,10 @@ class ChatConsumer(WebsocketConsumer):
           for group in self.groups:
               if group == group_name:
                   self.groups.remove(group_name)
-          print(self.groups)
 
     elif command == 'createRoom':
-      print("Comand createRoom")
       room_name = text_data_json.get('room_name')
-      print(room_name)
       if room_name:
-          print("entrou em room_name")
           room = Room.objects.create(user = self.scope["user"], title = room_name)
 
           group_name = f'chat_{room.id}'
@@ -89,13 +96,19 @@ class ChatConsumer(WebsocketConsumer):
                           'id': room.id,
                           'title': room.title,
                           'created_at': room.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                          'user': room.user.username
+                          'user': {
+                            'id':room.user.id,
+                            'username':room.user.username
+                          }
                       }
                   }
               )
               print("enviou pro grupo")
           except:
               print("não enviou nada pro servidor")
+
+    elif command == 'getMessages':
+      pass
 
     elif command == 'message':
       room_name = text_data_json.get('room_name')
@@ -177,5 +190,13 @@ class ChatConsumer(WebsocketConsumer):
 
         self.send(text_data=json.dumps({
             'room': room
+        }))
+
+  def login_user(self, event):
+        # Envia notificações para todos os usuários
+        user = event.get('user', '')
+
+        self.send(text_data=json.dumps({
+            'user': user
         }))
 

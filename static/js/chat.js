@@ -4,10 +4,15 @@ const baseUrl = window.location.origin.replace(/^http/, 'ws');
 
 const socket = new WebSocket(baseUrl +"/ws/chat/");
 
+const user_autenticated  = JSON.parse(sessionStorage.user)
 
-
+function scrollToBottom() {
+    Qs(".messages").scrollTop = Qs(".messages").scrollHeight;
+}
+    
 socket.onopen = () => {
     console.log("Conectado")
+
 }
 
 
@@ -31,6 +36,8 @@ const setRoomActive = (room_id) =>{
         'command': 'join',
         'room_name': room_id
     }));
+
+    Qs(".messages").scrollTop = Qs(".messages").scrollHeight;
 };
 
 const getMessages = async (room_id) => {
@@ -44,7 +51,8 @@ const getMessages = async (room_id) => {
     const html = await response.text();
     $chatMessages.innerHTML = html
 
-    setRoomActive(room_id)
+    setRoomActive(room_id);
+    
 };
 
 
@@ -52,34 +60,28 @@ socket.onmessage = (e) => {
     var activeRoom  = Qs("#selected-room").value
     const data = JSON.parse(e.data);
     const message_info = Qs(".message_list_room")
+
     if (data.notification) {
-        console.log(activeRoom)
             if(data.notification.room.id !== activeRoom){
                 notify(`${data.notification.message.user.username}: ${data.notification.message.text}`)
             }
     } else if (data.message){
         if(message_info){
             message_info.style.display = "none"
-
         }
-        html = `
-            <div class="d-flex justify-content-between">
-                <div class="content text-center">
-                    <b>@${data.message.user.username}</b> ${data.message.text}
-                </div>
-                <div class="time">${data.message.created_at}</div>
-            </div>
-        `;
-        const $uniqueMessageContainer = Qs(".unique-message-container");
-        $uniqueMessageContainer.insertAdjacentHTML("beforeend", html);
-
-        // Opcional: rolar para baixo para mostrar a nova mensagem
-        $chatMessages.scrollTop = $chatMessages.scrollHeight;
+        console.log(data.message)
+        addMessage(data.message)
+        
     } else if(data.room){
         html =`<li role='button'class = "list-group-item"  id="room-${data.room.id}" onclick="getMessages('${data.room.id}')">${data.room.title}</li> `
         const $uniqueRoomContainer = Qs(".list-rooms");
         $uniqueRoomContainer.insertAdjacentHTML("afterbegin", html);
-        getLastRoom()
+        const userString = sessionStorage.getItem('user');
+        const user = JSON.parse(userString);
+        console.log("user local:", user_autenticated.id, "user que criou a sala", data.room.user.id);
+        if(user_autenticated.id === data.room.user.id){
+            getLastRoom()
+        }
         Qs(".create-room").reset();
     }
 
@@ -90,6 +92,35 @@ socket.onclose = () => {
     
 }
 
+
+const addMessage = (message) =>{
+    console.log(message)
+    if(message.user.id === user_autenticated.id){
+        var html = `
+        <div class="chat-message message-sent clearfix"">
+            <div class="message-text">
+            ${message.text}
+            </div>
+        </div>
+        `
+
+    }else {
+        var html = `
+        <div class="chat-message  message-received clearfix">
+            <div class="message-text">
+            <div class="message-username">${message.user.username}</div>
+            ${message.text}
+            </div>
+        </div>
+        `  
+    }
+    console.log(html)
+    const $uniqueMessageContainer = Qs("#messages");
+    console.log($uniqueMessageContainer)
+    $uniqueMessageContainer.insertAdjacentHTML("beforeend", html);
+
+    scrollToBottom()
+}
 
 
 const sendMessage = async (data) =>{
@@ -152,6 +183,14 @@ Qs(".send-message").addEventListener('submit', (e) => {
     sendMessage(data);
 });
 
+const textarea = document.getElementById('chat');
+  
+textarea.addEventListener('input', autoResize);
+
+function autoResize() {
+this.style.height = 'auto'; // Reseta a altura para calcular a nova altura corretamente
+this.style.height = (this.scrollHeight) + 'px'; // Ajusta a altura com base no scrollHeight
+}
 
 
 Qs(".create-room").addEventListener('submit', (e) =>{
@@ -188,3 +227,10 @@ const notify = (body) =>{
     }
 }
 
+
+function scrollToBottom() {
+    var messages = document.getElementById('messages');
+    messages.scrollTop = messages.scrollHeight;
+}
+
+console.log(user_autenticated)

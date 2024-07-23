@@ -33,7 +33,14 @@ SIMPLE_JWT = {
 }
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
-CSRF_TRUSTED_ORIGINS = ["https://*.replit.dev", "https://*.replit.app", "https://quetzal-touched-jolly.ngrok-free.app/"]
+# Obter a configuração CSRF_TRUSTED_ORIGINS do arquivo .env
+csrf_trusted_origins = os.getenv('CSRF_TRUSTED_ORIGINS', '')
+
+# Garantir que a configuração está no formato correto
+if csrf_trusted_origins:
+    CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted_origins.split(',') if origin.strip().startswith(('http://', 'https://'))]
+else:
+    CSRF_TRUSTED_ORIGINS = []
 
 # Application definition
 

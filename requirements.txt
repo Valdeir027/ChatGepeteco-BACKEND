@@ -2,5 +2,6 @@ channels==3.0.4
 daphne==3.0.2
 Django==5.0.2
 djangorestframework==3.15.1
+djangorestframework-simplejwt
 drf-yasg 
 python-dotenv

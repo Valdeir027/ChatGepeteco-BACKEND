@@ -20,16 +20,6 @@ class ChatConsumer(WebsocketConsumer):
       )
       self.groups.append('main')
     
-    #   async_to_sync(self.channel_layer.group_send)(
-    #               "main",
-    #               {
-    #                   'type': 'login_user',
-    #                   'user': {
-    #                       'id': user.id,
-    #                       'username': user.username,
-    #                   }
-    #               }
-    #           )
 
   def disconnect(self, close_code):
         # Remove o WebSocket do grupo de notificações
@@ -108,7 +98,41 @@ class ChatConsumer(WebsocketConsumer):
               print("não enviou nada pro servidor")
 
     elif command == 'getMessages':
-      pass
+        room_name = text_data_json.get('room_name')
+        print("room_name:", room_name)
+        messages = Message.objects.filter(room__id=int(room_name))
+        messages_list = []
+
+        for message in messages:
+            user = message.user
+            messages_list.append({
+                "id":message.id,
+                "text":message.text,
+                "created_at":message.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                "user": {
+                    "id":user.id,
+                    "username":user.username
+                }
+            })
+        async_to_sync(self.channel_layer.group_send)(
+              'main',
+              {
+                  'type': 'getMessages',
+                  'messages': messages_list
+              }
+            )
+
+    elif command == 'getRooms':
+        # Get all rooms from the database
+        rooms = Room.objects.all()
+        room_list = [{'id': room.id, 'title': room.title} for room in rooms]
+        async_to_sync(self.channel_layer.group_send)(
+              'main',
+              {
+                  'type': 'getRooms',
+                  'rooms': room_list
+              }
+            )
 
     elif command == 'message':
       room_name = text_data_json.get('room_name')
@@ -166,6 +190,20 @@ class ChatConsumer(WebsocketConsumer):
               }
           )
 
+
+  def getMessages(self, event):
+    messages = event.get('messages', '')
+
+    self.send(text_data=json.dumps({
+        'messages': messages,
+    }))
+
+  def getRooms(self, event):
+    rooms = event.get('rooms', '')
+
+    self.send(text_data=json.dumps({
+        'rooms': rooms,
+    }))
 
   def chat_message(self, event):
     message = event.get('message', '')

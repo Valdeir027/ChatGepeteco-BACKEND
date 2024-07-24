@@ -4,13 +4,19 @@ const baseUrl = window.location.origin.replace(/^http/, 'ws');
 
 const socket = new WebSocket(baseUrl +"/ws/chat/");
 
-const user_autenticated  = JSON.parse(sessionStorage.user)
+var user_autenticated= '';
 
+if(sessionStorage.user){
+    var user_autenticated  = JSON.parse(sessionStorage.user)
+}else{
+    window.location.href = "/logout"
+}
 function scrollToBottom() {
     Qs(".messages").scrollTop = Qs(".messages").scrollHeight;
 }
     
 socket.onopen = () => {
+    getAllRoom()
     console.log("Conectado")
 
 }
@@ -32,12 +38,18 @@ const setRoomActive = (room_id) =>{
     Qs(`#room-${room_id}`).classList.add("active");
     Qs("#selected-room").value = room_id
 
+
+    socket.send(JSON.stringify({
+        'command': 'getMessages',
+        'room_name': room_id
+    }));
+
     socket.send(JSON.stringify({
         'command': 'join',
         'room_name': room_id
     }));
 
-    Qs(".messages").scrollTop = Qs(".messages").scrollHeight;
+    
 };
 
 const getMessages = async (room_id) => {
@@ -46,7 +58,6 @@ const getMessages = async (room_id) => {
         'command': 'leave',
         'room_name': document.querySelector("#selected-room").value
     }));
-    
     const response = await fetch(`/${room_id}`);
     const html = await response.text();
     $chatMessages.innerHTML = html
@@ -62,14 +73,13 @@ socket.onmessage = (e) => {
     const message_info = Qs(".message_list_room")
 
     if (data.notification) {
-            if(data.notification.room.id !== activeRoom){
+            if(parseInt(data.notification.room.id) !== parseInt(activeRoom)){
                 notify(`${data.notification.message.user.username}: ${data.notification.message.text}`)
             }
     } else if (data.message){
         if(message_info){
             message_info.style.display = "none"
         }
-        console.log(data.message)
         addMessage(data.message)
         
     } else if(data.room){
@@ -84,6 +94,21 @@ socket.onmessage = (e) => {
         }
         Qs(".create-room").reset();
     }
+    if(data.rooms){
+        for (const room of data.rooms) {
+            addRoom(room)
+            
+        }
+        
+    }
+    
+    if(data.messages){
+        for (const message of data.messages){
+            addMessage(message)
+            Qs(".messages").scrollTop = Qs(".messages").scrollHeight;
+        }
+    }
+
 
 };
 
@@ -94,7 +119,6 @@ socket.onclose = () => {
 
 
 const addMessage = (message) =>{
-    console.log(message)
     if(message.user.id === user_autenticated.id){
         var html = `
         <div class="chat-message message-sent clearfix"">
@@ -114,28 +138,21 @@ const addMessage = (message) =>{
         </div>
         `  
     }
-    console.log(html)
     const $uniqueMessageContainer = Qs("#messages");
-    console.log($uniqueMessageContainer)
     $uniqueMessageContainer.insertAdjacentHTML("beforeend", html);
-
-    scrollToBottom()
 }
 
 
-const sendMessage = async (data) =>{
 
-    // const response = await fetch(`/${data.room_id}/send`,{
-    //     method:"POST",
-    //     headers:{
-    //         "Content-type":"aplication/json",
-    //         "X-CSRFToken":data.csrfmiddlewaretoken
-    //     },
-    //     body: JSON.stringify(data)
-    // });
-    // const html = await response.text();
-    // const $uniqueMessageContainer = Qs(".unique-message-container");
-    // $uniqueMessageContainer.insertAdjacentHTML("beforeend", html);
+const getAllRoom = async (data) =>{
+    
+    socket.send(JSON.stringify({
+        'command': 'getRooms',
+
+    }));
+
+}
+const sendMessage = async (data) =>{
     
     socket.send(JSON.stringify({
         'command': 'message',
@@ -147,18 +164,6 @@ const sendMessage = async (data) =>{
 };
 
 const createRoom = async (data) =>{
-
-    // // const response = await fetch(`/create-room`,{
-    // //     method:"POST",
-    // //     headers:{
-    // //         "Content-type":"aplication/json",
-    // //         "X-CSRFToken":data.csrfmiddlewaretoken
-    // //     },
-    // //     body: JSON.stringify(data)
-    // // });
-    // const html = await response.text();
-    // const $uniqueRoomContainer = Qs(".list-rooms");
-    // $uniqueRoomContainer.insertAdjacentHTML("afterbegin", html);
 
     socket.send(JSON.stringify({
         'command': 'createRoom',
@@ -172,7 +177,6 @@ const createRoom = async (data) =>{
 
 
 const getLastRoom  =  () => {
-    console.log("getlastRoom")
     Qs(".list-rooms li").click();
 }
 
@@ -183,10 +187,16 @@ Qs(".send-message").addEventListener('submit', (e) => {
     sendMessage(data);
 });
 
-const textarea = document.getElementById('chat');
-  
-textarea.addEventListener('input', autoResize);
+const textarea = document.getElementById('chat_textarea');
+const form = Qs(".send-message");
 
+
+textarea.addEventListener('input', ()=>{
+    form.style.height = 'auto'; // Reseta a altura para calcular a nova altura corretamente
+    textarea.style.height = 'auto'; // Reseta a altura para calcular a nova altura corretamente
+    textarea.style.height = (textarea.scrollHeight) + 'px'; 
+}
+);
 function autoResize() {
 this.style.height = 'auto'; // Reseta a altura para calcular a nova altura corretamente
 this.style.height = (this.scrollHeight) + 'px'; // Ajusta a altura com base no scrollHeight
@@ -232,5 +242,13 @@ function scrollToBottom() {
     var messages = document.getElementById('messages');
     messages.scrollTop = messages.scrollHeight;
 }
+
+
+const addRoom= (room) =>{
+    html = `<li role='button'class = "list-group-item"  id="room-${room.id}" onclick="getMessages('${room.id}')">${room.title}</li> `
+    const $uniqueRoomContainer = Qs(".list-rooms");
+    $uniqueRoomContainer.insertAdjacentHTML("afterbegin", html);
+}
+
 
 console.log(user_autenticated)
